@@ -39,7 +39,7 @@ def install_docker_and_compose():
         subprocess.run("sudo curl -L \"https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)\" -o /usr/local/bin/docker-compose", shell=True, check=True)
         subprocess.run("sudo chmod +x /usr/local/bin/docker-compose", shell=True, check=True)
         
-        # Enable Docker service
+        # Enable Docker service to start on boot
         subprocess.run("sudo systemctl enable --now docker", shell=True, check=True)
         
         print("Docker and Docker Compose installed successfully.")
@@ -47,10 +47,10 @@ def install_docker_and_compose():
         print(f"Error installing Docker and Docker Compose: {e}")
         exit(1)
 
-# Step 5: Create a new user for T-Pot and add them to the root group
+# Step 5: Create a new user for T-Pot and add them to the root and docker groups
 def create_user_and_group():
     try:
-        print(f"Creating new user '{NEW_USER}' and adding to the root group...")
+        print(f"Creating new user '{NEW_USER}' and adding to the root and docker groups...")
         
         # Create a new user
         subprocess.run(["sudo", "useradd", "-m", "-g", "root", NEW_USER], check=True)
@@ -61,12 +61,15 @@ def create_user_and_group():
         # Add the user to the sudo group (root group for full privileges)
         subprocess.run(f"sudo usermod -aG sudo {NEW_USER}", shell=True, check=True)
         
+        # Add the user to the Docker group to grant Docker permissions
+        subprocess.run(f"sudo usermod -aG docker {NEW_USER}", shell=True, check=True)
+        
         # Set proper permissions for the user's home directory
         subprocess.run(f"sudo chmod 750 /home/{NEW_USER}", shell=True, check=True)
         
-        print(f"User '{NEW_USER}' created successfully and added to the root group.")
+        print(f"User '{NEW_USER}' created successfully and added to the root and docker groups.")
     except subprocess.CalledProcessError as e:
-        print(f"Error creating user and adding to root group: {e}")
+        print(f"Error creating user and adding to root and docker groups: {e}")
         exit(1)
 
 # Step 6: Clone the T-Pot repository
@@ -82,22 +85,9 @@ def clone_tpot_repository():
         print(f"Error cloning T-Pot repository: {e}")
         exit(1)
 
-# Step 7: Run the T-Pot installation script
-def run_tpot_installation():
-    try:
-        print("Running T-Pot installation script...")
-        
-        # Run the installation script as the new user
-        subprocess.run(f"sudo su - {NEW_USER} -c 'cd ~/tpotce && ./install.sh'", shell=True, check=True)
-        
-        print("T-Pot installation completed successfully.")
-    except subprocess.CalledProcessError as e:
-        print(f"Error running T-Pot installation: {e}")
-        exit(1)
-
 # Main function to execute all setup steps
 def main():
-    print("Starting T-Pot installation process...")
+    print("Starting T-Pot installation process (without running the installation script)...")
     
     # Step 1: Prompt for the username
     get_user_input()
@@ -111,17 +101,13 @@ def main():
     # Step 4: Install Docker and Docker Compose
     install_docker_and_compose()
 
-    # Step 5: Create a new user and add to the root group
+    # Step 5: Create a new user and add to the root and docker groups
     create_user_and_group()
 
     # Step 6: Clone the T-Pot repository
     clone_tpot_repository()
 
-    # Step 7: Run the T-Pot installation script
-    run_tpot_installation()
-
-    print("T-Pot setup completed successfully!")
+    print("T-Pot setup completed successfully (installation script not run).")
 
 if __name__ == "__main__":
     main()
-
