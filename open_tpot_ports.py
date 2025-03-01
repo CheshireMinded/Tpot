@@ -1,4 +1,3 @@
-# This sets up the ports required for Tpot by Telekom to work
 import subprocess
 
 # List of ports to open
@@ -35,7 +34,16 @@ ports = [
     6379,  # Redishoneypot
     5060,  # SentryPeer (TCP/UDP)
     80,  # Snare (Tanner)
-    8090  # Wordpot
+    8090,  # Wordpot
+    2222,  # Additional Port
+    5601,  # Kibana Web UI (direct access)
+    5066,  # Custom Service
+    5044,  # Custom Service
+    2375,  # Docker Remote API (insecure, not recommended without proper security)
+    2376,  # Docker Remote API (secure, recommended for Docker management)
+    9200,  # Elasticsearch HTTP API (direct access)
+    5601,  # Kibana Web UI (direct access)
+    3000,  # General purpose web tool/service (i.e., HoneyAML, etc.)
 ]
 
 # Function to open ports with ufw
