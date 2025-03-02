@@ -1,17 +1,41 @@
-import subprocess
+#  PRIOR - join token is set as an environment variable.
+# export DOCKER_SWARM_JOIN_TOKEN=<your_swarm_join_token_here>
 
-# Get the join token for worker nodes
+import subprocess
+import os
+
+# Get the join token for worker nodes from the environment variable
 def get_join_token():
     try:
-        print("Getting Docker Swarm join token for worker nodes...")
-        result = subprocess.run("sudo docker swarm join-token -q worker", shell=True, check=True, capture_output=True, text=True)
-        join_token = result.stdout.strip()
+        # Retrieve the join token from an environment variable for security
+        join_token = os.getenv('DOCKER_SWARM_JOIN_TOKEN')
+        if not join_token:
+            raise ValueError("Join token is not set in environment variables.")
+        print("Docker Swarm join token retrieved from environment variables.")
         return join_token
-    except subprocess.CalledProcessError as e:
-        print(f"Error getting join token: {e}")
+    except Exception as e:
+        print(f"Error retrieving join token: {e}")
         exit(1)
 
-# Check if the worker node is reachable (using netcat for port 2377)
+# Discover worker nodes in the local network
+def discover_worker_nodes():
+    worker_nodes = []
+    # Run a simple nmap scan to discover devices with port 2377 open (Docker Swarm port)
+    try:
+        print("Scanning for worker nodes in the network...")
+        result = subprocess.run("nmap -p 2377 --open 192.168.1.0/24", shell=True, capture_output=True, text=True)
+        
+        # Parse the nmap output to find IPs with open port 2377
+        for line in result.stdout.splitlines():
+            if "Nmap scan report for" in line:
+                ip = line.split()[-1]
+                worker_nodes.append(ip)
+        print(f"Found worker nodes: {worker_nodes}")
+    except subprocess.CalledProcessError as e:
+        print(f"Error during network scan: {e}")
+    return worker_nodes
+
+# Check if the worker node is reachable on port 2377 (Docker Swarm port)
 def is_node_reachable(ip):
     try:
         print(f"Checking if worker node {ip} is reachable...")
@@ -42,8 +66,13 @@ def add_worker_node_to_swarm(worker_ip, join_token):
 
 # Main function
 def main():
-    # List of worker nodes (replace with your actual worker IP addresses)
+    # Discover worker nodes in the local network
+    worker_nodes = discover_worker_nodes()
     
+    # If no worker nodes are found, exit the script
+    if not worker_nodes:
+        print("No worker nodes found in the network.")
+        exit(1)
     
     # Get the join token for Docker Swarm
     join_token = get_join_token()
@@ -54,4 +83,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-wr
