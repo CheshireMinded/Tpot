@@ -43,7 +43,7 @@ def add_worker_node_to_swarm(worker_ip, join_token):
 # Main function
 def main():
     # List of worker nodes (replace with your actual worker IP addresses)
-    worker_nodes = ["192.168.1.101", "192.168.1.102"]  # Example IPs for worker nodes
+    
     
     # Get the join token for Docker Swarm
     join_token = get_join_token()
