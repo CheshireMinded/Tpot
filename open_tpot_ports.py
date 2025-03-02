@@ -44,6 +44,11 @@ ports = [
     9200,  # Elasticsearch HTTP API (direct access)
     5601,  # Kibana Web UI (direct access)
     3000,  # General purpose web tool/service (i.e., HoneyAML, etc.)
+    2222,
+    5601,
+    5066,
+    5044,
+    9200
 ]
 
 # Function to open ports with ufw
