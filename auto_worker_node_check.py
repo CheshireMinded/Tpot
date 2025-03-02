@@ -43,8 +43,46 @@ def join_swarm(worker_ip, join_token, master_node_ip):
         
         ssh.close()
         print(f"Node {worker_ip} successfully added to the Swarm.")
+        
+        # Apply iptables rules after joining the swarm
+        apply_iptables_rules(worker_ip, master_node_ip)
+
     except Exception as e:
         print(f"Error joining the swarm for node {worker_ip}: {e}")
+
+# Function to apply iptables rules to worker node
+def apply_iptables_rules(worker_ip, master_node_ip):
+    try:
+        print(f"Applying iptables rules on {worker_ip}...")
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(worker_ip, username="your-username", password="your-password")  # Provide SSH details
+        
+        # Define iptables rules
+        rules = [
+            f"sudo iptables -A INPUT -p tcp --dport 2377 -s {master_node_ip} -j ACCEPT",  # Port 2377 for master node
+            f"sudo iptables -A INPUT -p tcp --dport 7946 -s <swarm-node-ip-range> -j ACCEPT",  # Port 7946 for internal communication
+            f"sudo iptables -A INPUT -p udp --dport 7946 -s <swarm-node-ip-range> -j ACCEPT",  # Port 7946 UDP for internal communication
+            f"sudo iptables -A INPUT -p udp --dport 4789 -s <swarm-node-ip-range> -j ACCEPT",  # Port 4789 UDP for overlay network
+            "sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT",  # HTTP port
+            "sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT",  # HTTPS port
+            "sudo iptables -A INPUT -j DROP",  # Drop all other incoming traffic
+        ]
+        
+        for rule in rules:
+            stdin, stdout, stderr = ssh.exec_command(rule)
+            result = stdout.read().decode()
+            error = stderr.read().decode()
+            if result:
+                print(f"Output: {result}")
+            if error:
+                print(f"Error: {error}")
+        
+        print(f"iptables rules applied successfully on {worker_ip}")
+        ssh.close()
+
+    except Exception as e:
+        print(f"Error applying iptables rules on node {worker_ip}: {e}")
 
 # Function to retrieve the Swarm join token
 def get_join_token():
@@ -72,4 +110,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
