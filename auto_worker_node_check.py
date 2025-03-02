@@ -1,7 +1,4 @@
-#  PRIOR - join token is set as an environment variable.
-# export DOCKER_SWARM_JOIN_TOKEN=<your_swarm_join_token_here>
-# NEED TO ALSO INSTALL:
-# pip install paramiko
+
 # update the master node and worker node ip's to your actual ip addresses
 
 import subprocess
@@ -84,13 +81,23 @@ def apply_iptables_rules(worker_ip, master_node_ip):
     except Exception as e:
         print(f"Error applying iptables rules on node {worker_ip}: {e}")
 
-# Function to retrieve the Swarm join token
+# Function to retrieve the Swarm join token dynamically
 def get_join_token():
-    join_token = os.getenv('DOCKER_SWARM_JOIN_TOKEN')
-    if not join_token:
-        print("Error: Docker Swarm join token is not provided. Please set the DOCKER_SWARM_JOIN_TOKEN environment variable.")
+    try:
+        # Retrieve the join token using the 'docker swarm join-token' command on the Master Node
+        result = subprocess.run(
+            "sudo docker swarm join-token worker -q", 
+            shell=True, capture_output=True, text=True, check=True
+        )
+        join_token = result.stdout.strip()
+        
+        if not join_token:
+            print("Error: Could not retrieve the join token.")
+            exit(1)
+        return join_token
+    except subprocess.CalledProcessError as e:
+        print(f"Error retrieving join token: {e}")
         exit(1)
-    return join_token
 
 # Main function
 def main():
@@ -110,5 +117,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
