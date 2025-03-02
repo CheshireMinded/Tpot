@@ -103,7 +103,7 @@ def get_join_token():
 def main():
     # Define the master node's IP and the range of worker nodes
     master_node_ip = "192.168.89.135 "  # Replace with actual master node IP
-    worker_nodes = ["192.168.1.137", "192.168.1.136"]  # Example worker IPs
+    worker_nodes = ["192.168.89.137", "192.168.89.136"]  # Example worker IPs
 
     join_token = get_join_token()
 
