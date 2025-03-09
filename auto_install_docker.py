@@ -54,9 +54,23 @@ def install_docker_compose_standalone():
     run_command("sudo chmod +x /usr/local/bin/docker-compose")
     print("Standalone Docker Compose installed successfully.")
 
+def check_docker_installation():
+    """Check if Docker is installed using 'which' command"""
+    print("Checking if Docker is installed...")
+    try:
+        result = subprocess.run("which docker", check=True, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if result.stdout.decode().strip() == "":
+            print("Docker is not installed. Proceeding to install Docker...")
+            install_docker()
+        else:
+            print("Docker is already installed.")
+    except subprocess.CalledProcessError:
+        print("Error checking Docker installation. Proceeding to install Docker...")
+        install_docker()
+
 def main():
-    # Install Docker
-    install_docker()
+    # Check if Docker is installed, otherwise install Docker
+    check_docker_installation()
 
     # Ask user for the installation preference for Docker Compose
     choice = input("Do you want to install the Docker Compose Plugin (1) or Standalone Docker Compose (2)? Enter 1 or 2: ").strip()
@@ -80,4 +94,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
