@@ -121,6 +121,16 @@ def check_port_conflicts(selected_services):
         return True
     return False
 
+def print_color(text, color):
+    colors = {
+        "red": "\033[91m",
+        "green": "\033[92m",
+        "blue": "\033[94m",  # Added blue
+        "magenta": "\033[95m",  # Added magenta
+        "end": "\033[0m",
+    }
+    print(f"{colors[color]}{text}{colors['end']}")
+
 def enforce_dependencies(selected_services, services):
     """Enforce dependencies based on service selection."""
     tanner_services = {'snare', 'tanner', 'tanner_redis', 'tanner_phpox', 'tanner_api'}
@@ -160,15 +170,7 @@ def remove_unused_networks(selected_services, services, networks):
         if network not in used_networks:
             del networks[network]
 
-def print_color(text, color):
-    colors = {
-        "red": "\033[91m",
-        "green": "\033[92m",
-        "blue": "\033[94m",
-        "magenta": "\033[95m",
-        "end": "\033[0m",
-    }
-    print(f"{colors[color]}{text}{colors['end']}")
+
 
 def main():
     config = load_config(config_filename)
