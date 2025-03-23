@@ -160,6 +160,16 @@ def remove_unused_networks(selected_services, services, networks):
         if network not in used_networks:
             del networks[network]
 
+def print_color(text, color):
+    colors = {
+        "red": "\033[91m",
+        "green": "\033[92m",
+        "blue": "\033[94m",
+        "magenta": "\033[95m",
+        "end": "\033[0m",
+    }
+    print(f"{colors[color]}{text}{colors['end']}")
+
 def main():
     config = load_config(config_filename)
 
@@ -199,3 +209,4 @@ def main():
 if __name__ == "__main__":
     print_color(version, "magenta")
     main()
+
